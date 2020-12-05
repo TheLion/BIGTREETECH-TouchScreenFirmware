@@ -28,6 +28,7 @@ void infoMenuSelect(void)
   {
     case SERIAL_TSC:
     {
+      //initMachineSetting();     // load default machine settings
       Serial_ReSourceInit();
       #ifdef BUZZER_PIN
         Buzzer_Config();
@@ -37,6 +38,10 @@ void infoMenuSelect(void)
         #ifndef KEEP_KNOB_LED_COLOR_MARLIN_MODE
           knob_LED_Init():
         #endif
+      #endif
+
+      #if ENC_ACTIVE_SIGNAL
+        setEncActiveSignal(0);
       #endif
       GUI_RestoreColorDefault();
       if(infoSettings.unified_menu == 1) //if Unified menu is selected
@@ -48,14 +53,14 @@ void infoMenuSelect(void)
         if (freshboot)
         {
           u32 startUpTime = OS_GetTimeMs();
-          heatSetUpdateTime(TEMPERATURE_QUERY_FAST_DURATION);
+          heatSetUpdateSeconds(TEMPERATURE_QUERY_FAST_SECONDS);
           LOGO_ReadDisplay();
           updateNextHeatCheckTime(); // send "M105" 1s later not now, because of mega2560 will be hanged when received data at startup
           while (OS_GetTimeMs() - startUpTime < 3000) //Display 3s logo
           {
             loopProcess();
           }
-          heatSetUpdateTime(TEMPERATURE_QUERY_SLOW_DURATION);
+          heatSetUpdateSeconds(TEMPERATURE_QUERY_SLOW_SECONDS);
           freshboot = false;
         }
       #endif
@@ -63,6 +68,9 @@ void infoMenuSelect(void)
     }
 
     case MARLIN:
+      #if ENC_ACTIVE_SIGNAL
+        setEncActiveSignal(1);
+      #endif
       if (infoSettings.serial_alwaysOn == 1)
       {
         Serial_ReSourceInit();
